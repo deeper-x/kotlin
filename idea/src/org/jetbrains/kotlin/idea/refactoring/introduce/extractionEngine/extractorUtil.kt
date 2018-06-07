@@ -16,7 +16,9 @@
 
 package org.jetbrains.kotlin.idea.refactoring.introduce.extractionEngine
 
+import com.intellij.codeHighlighting.HighlightDisplayLevel
 import com.intellij.openapi.util.Key
+import com.intellij.profile.codeInspection.ProjectInspectionProfileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.LocalSearchScope
@@ -38,6 +40,7 @@ import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.idea.util.psi.patternMatching.*
 import org.jetbrains.kotlin.idea.util.psi.patternMatching.UnificationResult.StronglyMatched
 import org.jetbrains.kotlin.idea.util.psi.patternMatching.UnificationResult.WeaklyMatched
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.KtPsiFactory.CallableBuilder
 import org.jetbrains.kotlin.psi.codeFragmentUtil.DEBUG_TYPE_REFERENCE_STRING
@@ -456,6 +459,23 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
         }
     }
 
+    fun isPublicApiImplicitTypeWarningEnabled(): Boolean {
+        val project = descriptor.extractionData.project
+        val inspectionProfileManager = ProjectInspectionProfileManager.getInstance(project)
+        val inspectionProfile = inspectionProfileManager.currentProfile
+        val state = inspectionProfile.getToolsOrNull("UseExpressionBody", project)?.defaultState ?: return false
+        return state.isEnabled && state.level != HighlightDisplayLevel.DO_NOT_SHOW
+    }
+
+    fun useExplicitReturnType(): Boolean {
+        if (descriptor.returnType.isFlexible()) return true
+        if (!isPublicApiImplicitTypeWarningEnabled()) return false
+        val targetClass = (descriptor.extractionData.targetSibling.parent as? KtClassBody)?.parent as? KtClassOrObject
+        val isNonLocal = (targetClass == null || !targetClass.isLocal) && !descriptor.extractionData.isLocal()
+        val visibility = (descriptor.visibility ?: KtTokens.DEFAULT_VISIBILITY_KEYWORD).toVisibility()
+        return isNonLocal && visibility.isPublicAPI
+    }
+
     fun adjustDeclarationBody(declaration: KtNamedDeclaration) {
         val body = declaration.getGeneratedBody()
 
@@ -554,7 +574,7 @@ fun ExtractionGeneratorConfiguration.generateDeclaration(
             val bodyOwner = body.parent as KtDeclarationWithBody
             val useExpressionBodyInspection = UseExpressionBodyInspection()
             if (bodyExpression != null && !bodyExpression.isMultiLine() && useExpressionBodyInspection.isActiveFor(bodyOwner)) {
-                useExpressionBodyInspection.simplify(bodyOwner, !descriptor.returnType.isFlexible())
+                useExpressionBodyInspection.simplify(bodyOwner, !useExplicitReturnType())
             }
         }
     }
