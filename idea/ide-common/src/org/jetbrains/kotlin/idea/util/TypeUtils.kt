@@ -71,6 +71,8 @@ private fun KotlinType.approximateNonDynamicFlexibleTypes(
         return approximation
     }
 
+    if (this is ErrorType) return this
+
     (unwrap() as? AbbreviatedType)?.let {
         return AbbreviatedType(it.expandedType, it.abbreviation.approximateNonDynamicFlexibleTypes(preferNotNull))
     }
