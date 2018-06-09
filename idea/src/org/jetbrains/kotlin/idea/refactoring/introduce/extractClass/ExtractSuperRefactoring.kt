@@ -234,9 +234,11 @@ class ExtractSuperRefactoring(
         val kind = if (extractInfo.isInterface) "interface" else "class"
         val prototype = psiFactory.createClass("$kind $newClassName")
         val newClass = if (targetParent is PsiDirectory) {
-            val template = FileTemplateManager.getInstance(project).getInternalTemplate("Kotlin File")
-            val newFile = NewKotlinFileAction.createFileFromTemplate(extractInfo.targetFileName, template, targetParent) as KtFile
-            newFile.add(prototype) as KtClass
+            val file = targetParent.findFile(extractInfo.targetFileName) ?: run {
+                val template = FileTemplateManager.getInstance(project).getInternalTemplate("Kotlin File")
+                NewKotlinFileAction.createFileFromTemplate(extractInfo.targetFileName, template, targetParent) as KtFile
+            }
+            file.add(prototype) as KtClass
         }
         else {
             val targetSibling = originalClass.parentsWithSelf.first { it.parent == targetParent }
