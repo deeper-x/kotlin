@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.idea.refactoring.pullUp
 
 import com.intellij.psi.PsiNamedElement
+import com.intellij.refactoring.classMembers.MemberInfoBase
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
@@ -39,7 +40,8 @@ import java.util.*
 
 class KotlinPullUpData(val sourceClass: KtClassOrObject,
                        val targetClass: PsiNamedElement,
-                       val membersToMove: Collection<KtNamedDeclaration>) {
+                       val membersToMove: Collection<KtNamedDeclaration>,
+                       val memberInfoMapper: MemberInfoMapper?) {
     val resolutionFacade = sourceClass.getResolutionFacade()
 
     val sourceClassContext = resolutionFacade.analyzeWithAllCompilerChecks(listOf(sourceClass)).bindingContext

@@ -46,7 +46,7 @@ class KotlinClassMembersRefactoringSupport : ClassMembersRefactoringSupport {
             override fun collect(member: KtNamedDeclaration) {
                 member.accept(
                         object : KtTreeVisitorVoid() {
-                            private val pullUpData = superClass?.let { KotlinPullUpData(clazz as KtClassOrObject, it as PsiNamedElement, emptyList()) }
+                            private val pullUpData = superClass?.let { KotlinPullUpData(clazz as KtClassOrObject, it as PsiNamedElement, emptyList(), null) }
 
                             private val possibleContainingClasses =
                                     listOf(clazz) + ((clazz as? KtClass)?.companionObjects ?: emptyList())

@@ -3985,6 +3985,11 @@ public class ExtractionTestGenerated extends AbstractExtractionTest {
             runTest("idea/testData/refactoring/extractSuperclass/interface.kt");
         }
 
+        @TestMetadata("liftVisibilityForUsageInAbstractedMember.kt")
+        public void testLiftVisibilityForUsageInAbstractedMember() throws Exception {
+            runTest("idea/testData/refactoring/extractSuperclass/liftVisibilityForUsageInAbstractedMember.kt");
+        }
+
         @TestMetadata("noWarningOnVisibilityInsideAbstractedMember.kt")
         public void testNoWarningOnVisibilityInsideAbstractedMember() throws Exception {
             runTest("idea/testData/refactoring/extractSuperclass/noWarningOnVisibilityInsideAbstractedMember.kt");

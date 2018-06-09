@@ -23,7 +23,6 @@ import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.extractSuperclass.ExtractSuperClassUtil
-import com.intellij.refactoring.memberPullUp.PullUpProcessor
 import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.intellij.refactoring.util.DocCommentPolicy
 import com.intellij.refactoring.util.MoveRenameUsageInfo
@@ -50,6 +49,8 @@ import org.jetbrains.kotlin.idea.refactoring.memberInfo.toJavaMemberInfo
 import org.jetbrains.kotlin.idea.refactoring.move.moveDeclarations.KotlinMoveTargetForDeferredFile
 import org.jetbrains.kotlin.idea.refactoring.move.moveDeclarations.KotlinMoveTargetForExistingElement
 import org.jetbrains.kotlin.idea.refactoring.move.moveDeclarations.MoveConflictChecker
+import org.jetbrains.kotlin.idea.refactoring.pullUp.MemberInfoMapper
+import org.jetbrains.kotlin.idea.refactoring.pullUp.PullUpProcessorWrapper
 import org.jetbrains.kotlin.idea.refactoring.pullUp.checkPrivateMembersWithUsages
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.idea.runSynchronouslyWithProgress
@@ -177,11 +178,18 @@ class ExtractSuperRefactoring(
 
                     if (isExtractInterface) {
                         val resolutionFacade = originalClass.getResolutionFacade()
-
                         val membersToMove = elementsToMove.filterIsInstance<KtNamedDeclaration>()
+                        val memberInfoMapper = MemberInfoMapper(memberInfos.mapNotNull { it.toJavaMemberInfo() })
                         for (member in membersToMove) {
-                            val memberDescriptor = member.resolveToDescriptorWrapperAware(resolutionFacade)
-                            checkPrivateMembersWithUsages(member, memberDescriptor, originalClass, membersToMove, conflicts)
+                            checkPrivateMembersWithUsages(
+                                    member,
+                                    member.resolveToDescriptorWrapperAware(resolutionFacade),
+                                    originalClass,
+                                    isExtractInterface,
+                                    memberInfoMapper,
+                                    membersToMove,
+                                    conflicts
+                            )
                         }
                     }
                 }
@@ -316,10 +324,10 @@ class ExtractSuperRefactoring(
         project.executeWriteCommand(KotlinExtractSuperclassHandler.REFACTORING_NAME) {
             val newClass = createClass(superClassEntry)
 
-            val subClass = extractInfo.originalClass.toLightClass()
+            val subClass = extractInfo.originalClass.toLightClass() ?: return@executeWriteCommand
             val superClass = newClass.toLightClass()
 
-            PullUpProcessor(
+            PullUpProcessorWrapper(
                     subClass,
                     superClass ?: return@executeWriteCommand,
                     extractInfo.memberInfos.mapNotNull { it.toJavaMemberInfo() }.toTypedArray(),

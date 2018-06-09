@@ -101,7 +101,7 @@ class KotlinPullUpHandler : AbstractPullPushMembersHandler(
             val selectedMembers = helper.adjustMembers(members)
             val targetClass = helper.chooseSuperClass(superClasses)
             checkConflicts(project, classOrObject, targetClass, selectedMembers) {
-                KotlinPullUpDialog.createProcessor(classOrObject, targetClass, selectedMembers).run()
+                KotlinPullUpDialog.createProcessor(classOrObject, targetClass, selectedMembers)?.run()
             }
         }
         else {

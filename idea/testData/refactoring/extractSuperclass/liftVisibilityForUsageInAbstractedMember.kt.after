@@ -1,0 +1,15 @@
+// NAME: PrivateRefBase
+
+abstract class PrivateRefBase {
+    // INFO: {checked: "true", toAbstract: "false"}
+    protected fun privateFun() = 0
+
+    // INFO: {checked: "true", toAbstract: "true"}
+    abstract fun refer(): Int
+}
+
+// SIBLING:
+class PrivateRef : PrivateRefBase() {
+    // INFO: {checked: "true", toAbstract: "true"}
+    override fun refer() = privateFun()
+}

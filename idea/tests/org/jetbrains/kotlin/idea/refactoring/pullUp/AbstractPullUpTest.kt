@@ -80,7 +80,7 @@ abstract class AbstractPullUpTest : AbstractMemberPullPushTest() {
             )
             if (!conflicts.isEmpty) throw BaseRefactoringProcessor.ConflictsInTestsException(conflicts.values())
 
-            PullUpProcessor(sourceClass, targetClass, memberInfos, DocCommentPolicy<PsiComment>(DocCommentPolicy.ASIS)).run()
+            PullUpProcessorWrapper(sourceClass, targetClass, memberInfos, DocCommentPolicy<PsiComment>(DocCommentPolicy.ASIS)).run()
             UIUtil.dispatchAllInvocationEvents()
         }
     }

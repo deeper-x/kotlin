@@ -40,7 +40,7 @@ class KotlinPullUpHelperFactory : PullUpHelperFactory {
         val membersToMove = membersToMove
                 .mapNotNull { it.toKtDeclarationWrapperAware() }
                 .sortedBy { it.startOffset }
-        return KotlinPullUpData(sourceClass, targetClass, membersToMove)
+        return KotlinPullUpData(sourceClass, targetClass, membersToMove, (this as? PullUpDataEx)?.memberInfoMember)
     }
 
     override fun createPullUpHelper(data: PullUpData): PullUpHelper<*> {

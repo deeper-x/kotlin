@@ -160,12 +160,15 @@ class KotlinPullUpDialog(
     companion object {
         fun createProcessor(sourceClass: KtClassOrObject,
                             targetClass: PsiNamedElement,
-                            memberInfos: List<KotlinMemberInfo>): PullUpProcessor {
-            val targetPsiClass = targetClass as? PsiClass ?: (targetClass as KtClass).toLightClass()
-            return PullUpProcessor(sourceClass.toLightClass(),
-                                   targetPsiClass,
-                                   memberInfos.mapNotNull { it.toJavaMemberInfo() }.toTypedArray(),
-                                   DocCommentPolicy<PsiComment>(JavaRefactoringSettings.getInstance().PULL_UP_MEMBERS_JAVADOC))
+                            memberInfos: List<KotlinMemberInfo>): PullUpProcessor? {
+            val sourcePsiClass = sourceClass.toLightClass() ?: return null
+            val targetPsiClass = targetClass as? PsiClass ?: (targetClass as KtClass).toLightClass() ?: return null
+            return PullUpProcessorWrapper(
+                    sourcePsiClass,
+                    targetPsiClass,
+                    memberInfos.mapNotNull { it.toJavaMemberInfo() }.toTypedArray(),
+                    DocCommentPolicy<PsiComment>(JavaRefactoringSettings.getInstance().PULL_UP_MEMBERS_JAVADOC)
+            )
         }
     }
 }

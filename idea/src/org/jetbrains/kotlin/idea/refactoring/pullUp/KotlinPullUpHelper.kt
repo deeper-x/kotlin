@@ -284,6 +284,8 @@ class KotlinPullUpHelper(
         if (ignoreUsages || willBeUsedInSourceClass(
                 declaration,
                 data.sourceClass,
+                data.isInterfaceTarget,
+                data.memberInfoMapper,
                 data.membersToMove
             )) {
             if (newModifier != KtTokens.DEFAULT_VISIBILITY_KEYWORD) {
@@ -483,12 +485,7 @@ class KotlinPullUpHelper(
             val psiFactory = KtPsiFactory(member)
 
             val originalIsAbstract = member.hasModifier(KtTokens.ABSTRACT_KEYWORD)
-            val toAbstract = when {
-                info.isToAbstract -> true
-                !data.isInterfaceTarget -> false
-                member is KtProperty -> member.mustBeAbstractInInterface()
-                else -> false
-            }
+            val toAbstract = info.isEffectivelyToAbstract(data.isInterfaceTarget)
 
             val classToAddTo =
                 if (member.isCompanionMemberOf(data.sourceClass)) data.targetClass.getOrCreateCompanionObject() else data.targetClass
