@@ -80,7 +80,13 @@ private fun KtParameter.needToBeAbstract(targetClass: KtClassOrObject): Boolean 
     return hasModifier(KtTokens.ABSTRACT_KEYWORD) || targetClass is KtClass && targetClass.isInterface()
 }
 
-private fun KtParameter.toProperty(): KtProperty = KtPsiFactory(this).createProperty(text)
+private fun KtParameter.toProperty(): KtProperty =
+    KtPsiFactory(this)
+        .createProperty(text)
+        .also {
+            // Copy user data
+            it.typeReference = typeReference
+        }
 
 fun doAddCallableMember(
         memberCopy: KtCallableDeclaration,
